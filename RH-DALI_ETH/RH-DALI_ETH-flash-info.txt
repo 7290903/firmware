@@ -1,0 +1,13 @@
+-----------------------8def7de1362dfc8
+Content-Disposition: form-data; name="file"; filename="RH-DALI_ETH-flash-info.txt"
+Content-Type: application/octet-stream
+
+﻿device=RH-DALI_ETH
+chip=esp32s3
+flash_size=8MB
+tag=RH-DALI_ETH-v1.1.0
+version=1.1.0
+source_tag=v1.1.0
+addresses=0x0:bootloader,0x8000:partitions,0xe000:boot_app0,0x10000:firmware,0x670000:littlefs
+
+-----------------------8def7de1362dfc8--
