@@ -1,0 +1,226 @@
+{
+  "title": "RunHouse Датчик Климата",
+  "device_type": "RH-DK",
+  "group": "g-climate-sensor",
+  "hw": [
+    {
+      "signature": "RH-DK"
+    }
+  ],
+  "device": {
+    "name": "RH-DK",
+    "id": "rh-dk",
+    "max_read_registers": 10,
+    "request_delay_ms": 120,
+    "response_timeout_ms": 1200,
+    "device_max_fail_cycles": 30,
+    "enable_wb_continuous_read": true,
+    "setup": [
+      {
+        "title": "Stop bits",
+        "address": 112,
+        "reg_type": "holding",
+        "value": 2
+      },
+      {
+        "title": "RS-485 Response Delay",
+        "address": 113,
+        "reg_type": "holding",
+        "value": 12
+      }
+    ],
+    "parameters": {
+      "baud_rate": {
+        "title": "Baud rate",
+        "description": "baud_rate_description",
+        "address": 110,
+        "reg_type": "holding",
+        "enum": [96, 192, 384, 576, 1152],
+        "enum_titles": ["9600", "19200", "38400", "57600", "115200"],
+        "default": 96,
+        "order": 1
+      },
+      "rs485_response_delay_ms": {
+        "title": "RS-485 Response Delay (ms)",
+        "address": 113,
+        "reg_type": "holding",
+        "default": 12,
+        "min": 0,
+        "max": 50,
+        "order": 2
+      }
+    },
+    "channels": [
+      {
+        "name": "Temperature",
+        "reg_type": "holding",
+        "address": 0,
+        "type": "temperature",
+        "format": "float",
+        "word_order": "little_endian",
+        "read_period_ms": 4000
+      },
+      {
+        "name": "Temperature Corrected",
+        "reg_type": "holding",
+        "address": 2,
+        "type": "temperature",
+        "format": "float",
+        "word_order": "little_endian",
+        "read_period_ms": 4000
+      },
+      {
+        "name": "Humidity",
+        "reg_type": "holding",
+        "address": 4,
+        "type": "rel_humidity",
+        "format": "u16",
+        "read_period_ms": 4000
+      },
+      {
+        "name": "CO2",
+        "reg_type": "holding",
+        "address": 5,
+        "type": "value",
+        "format": "u16",
+        "units": "ppm",
+        "read_period_ms": 4000
+      },
+      {
+        "name": "TVOC",
+        "reg_type": "holding",
+        "address": 6,
+        "type": "value",
+        "format": "u16",
+        "units": "ppb",
+        "read_period_ms": 4000
+      },
+      {
+        "name": "AQI",
+        "reg_type": "holding",
+        "address": 7,
+        "type": "value",
+        "format": "u16",
+        "read_period_ms": 4000
+      },
+      {
+        "name": "Illuminance",
+        "reg_type": "holding",
+        "address": 8,
+        "type": "lux",
+        "format": "u16",
+        "error_value": 65535,
+        "read_period_ms": 5000
+      },
+      {
+        "name": "DS18B20 Temperature",
+        "reg_type": "holding",
+        "address": 9,
+        "type": "temperature",
+        "format": "float",
+        "word_order": "little_endian",
+        "read_period_ms": 5000
+      },
+      {
+        "name": "Temperature Sensor Enable",
+        "reg_type": "holding",
+        "address": 20,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "read_period_ms": 20000
+      },
+      {
+        "name": "CO2 Sensor Enable",
+        "reg_type": "holding",
+        "address": 21,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "read_period_ms": 20000
+      },
+      {
+        "name": "Illuminance Sensor Enable",
+        "reg_type": "holding",
+        "address": 22,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "read_period_ms": 20000
+      },
+      {
+        "name": "DS18B20 Enable",
+        "reg_type": "holding",
+        "address": 23,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "read_period_ms": 20000
+      },
+      {
+        "name": "LED Brightness",
+        "reg_type": "holding",
+        "address": 24,
+        "type": "range",
+        "format": "u16",
+        "min": 0,
+        "max": 255,
+        "read_period_ms": 15000
+      },
+      {
+        "name": "Auto LED",
+        "reg_type": "holding",
+        "address": 25,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "read_period_ms": 15000
+      },
+      {
+        "name": "WiFi AP",
+        "reg_type": "holding",
+        "address": 102,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "read_period_ms": 30000
+      },
+      {
+        "name": "Modbus Slave ID",
+        "reg_type": "holding",
+        "address": 128,
+        "type": "value",
+        "format": "u16",
+        "read_period_ms": 60000
+      },
+      {
+        "name": "Modbus Baud Rate",
+        "reg_type": "holding",
+        "address": 110,
+        "type": "value",
+        "format": "u16",
+        "enum": [96, 192, 384, 576, 1152],
+        "enum_titles": ["9600", "19200", "38400", "57600", "115200"],
+        "read_period_ms": 30000
+      },
+      {
+        "name": "Serial Number",
+        "reg_type": "holding",
+        "address": 270,
+        "type": "value",
+        "format": "u32",
+        "word_order": "big_endian",
+        "readonly": true,
+        "read_period_ms": 60000
+      }
+    ],
+    "translations": {
+      "en": {
+        "baud_rate_description": "1) Save this parameter while the RS-485 port still matches the current speed. 2) Then set the same baud and 8N2 on the WB port. Order matters."
+      },
+      "ru": {
+        "baud_rate_description": "1) Сохраните параметр, пока порт RS-485 ещё на текущей скорости. 2) Затем укажите ту же скорость и 8N2 на порту WB. Порядок важен."
+      }
+    }
+  }
+}

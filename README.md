@@ -5,6 +5,7 @@
 - В дереве репозитория — папки устройств с актуальными `.bin` и кратким README.
 - Канонический канал для OTA — [GitHub Releases](https://github.com/7290903/firmware/releases) (теги `{DEVICE}-vX.Y.Z`).
 - **Исходный код** хранится в отдельных private-репозиториях и сюда не публикуется.
+- Шаблоны Wiren Board (`wb-mqtt-serial`) — папка [`wb_template/`](wb_template/).
 
 ## Устройства
 
@@ -17,6 +18,16 @@
 - Прошивка: [RH-DALI_ETH-firmware.bin](https://github.com/7290903/firmware/releases/download/RH-DALI_ETH-v1.1.0/RH-DALI_ETH-firmware.bin)
 - LittleFS (веб-UI): [RH-DALI_ETH-littlefs.bin](https://github.com/7290903/firmware/releases/download/RH-DALI_ETH-v1.1.0/RH-DALI_ETH-littlefs.bin)
 - Папка в репозитории: [`RH-DALI_ETH/`](https://github.com/7290903/firmware/tree/main/RH-DALI_ETH)
+
+## Шаблоны Wiren Board
+
+Папка [`wb_template/`](wb_template/): `config-rh-curt.json` (шторы `RHCURT`), `config-rh-cs-in.json` (датчик `RH-DK`).
+
+На контроллере:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/wb_template/update-template-from-github.sh | bash
+```
 
 ## Схема релизов
 
