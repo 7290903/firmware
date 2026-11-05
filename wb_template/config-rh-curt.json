@@ -11,10 +11,10 @@
     "name": "RHCURT",
     "id": "rh-curt",
     "max_read_registers": 10,
-    "request_delay_ms": 120,
+    "request_delay_ms": 30,
     "response_timeout_ms": 1200,
     "device_max_fail_cycles": 30,
-    "enable_wb_continuous_read": false,
+    "enable_wb_continuous_read": true,
     "groups": [
       {
         "title": "Curtain",
@@ -75,7 +75,7 @@
         "readonly": true,
         "group": "gg_curtain",
         "order": 1,
-        "read_period_ms": 400
+        "read_period_ms": 3000
       },
       {
         "name": "Set Position",
@@ -88,7 +88,7 @@
         "units": "%",
         "group": "gg_curtain",
         "order": 2,
-        "read_period_ms": 400
+        "read_period_ms": 30000
       },
       {
         "name": "Open",
@@ -131,7 +131,7 @@
         "enum_titles": ["Stopped", "Opened", "Closed", "Opening", "Closing"],
         "group": "gg_curtain",
         "order": 6,
-        "read_period_ms": 800
+        "read_period_ms": 3000
       },
       {
         "name": "WiFi AP",
