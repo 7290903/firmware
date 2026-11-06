@@ -1,0 +1,265 @@
+{
+  "title": "RH-Шторы V2",
+  "device_type": "RHCRT2",
+  "group": "g-wb-curtain",
+  "hw": [
+    {
+      "signature": "RHCRT2"
+    }
+  ],
+  "device": {
+    "name": "RH-Шторы V2",
+    "id": "rh-curt-fast",
+    "max_read_registers": 0,
+    "request_delay_ms": 2,
+    "frame_timeout_ms": 24,
+    "response_timeout_ms": 80,
+    "device_max_fail_cycles": 30,
+    "enable_wb_continuous_read": true,
+    "groups": [
+      {
+        "title": "Curtain",
+        "id": "gg_curtain",
+        "order": 1
+      },
+      {
+        "title": "Settings",
+        "id": "gg_settings",
+        "order": 2
+      }
+    ],
+    "setup": [
+      {
+        "title": "Baud rate",
+        "address": 110,
+        "reg_type": "holding",
+        "value": 1152
+      },
+      {
+        "title": "Parity",
+        "address": 111,
+        "reg_type": "holding",
+        "value": 0
+      },
+      {
+        "title": "Stop bits",
+        "address": 112,
+        "reg_type": "holding",
+        "value": 2
+      },
+      {
+        "title": "RS-485 Response Delay",
+        "address": 113,
+        "reg_type": "holding",
+        "value": 2
+      }
+    ],
+    "parameters": {
+      "baud_rate": {
+        "title": "Baud rate",
+        "description": "baud_rate_description",
+        "address": 110,
+        "reg_type": "holding",
+        "enum": [96, 192, 384, 576, 1152],
+        "enum_titles": ["9600", "19200", "38400", "57600", "115200"],
+        "default": 1152,
+        "order": 1
+      },
+      "rs485_response_delay_ms": {
+        "title": "RS-485 Response Delay (ms)",
+        "address": 113,
+        "reg_type": "holding",
+        "default": 2,
+        "min": 0,
+        "max": 50,
+        "order": 3
+      }
+    },
+    "channels": [
+      {
+        "name": "Position",
+        "reg_type": "holding",
+        "address": 65,
+        "type": "range",
+        "format": "u16",
+        "min": 0,
+        "max": 100,
+        "units": "%",
+        "readonly": true,
+        "group": "gg_curtain",
+        "order": 1,
+        "sporadic": true
+      },
+      {
+        "name": "Set Position",
+        "reg_type": "holding",
+        "address": 64,
+        "type": "range",
+        "format": "u16",
+        "min": 0,
+        "max": 100,
+        "units": "%",
+        "group": "gg_curtain",
+        "order": 2,
+        "read_period_ms": 30000
+      },
+      {
+        "name": "Open",
+        "reg_type": "holding",
+        "address": 67,
+        "type": "pushbutton",
+        "format": "u16",
+        "on_value": 1,
+        "write_only": true,
+        "group": "gg_curtain",
+        "order": 3
+      },
+      {
+        "name": "Stop",
+        "reg_type": "holding",
+        "address": 68,
+        "type": "pushbutton",
+        "format": "u16",
+        "on_value": 1,
+        "write_only": true,
+        "group": "gg_curtain",
+        "order": 4
+      },
+      {
+        "name": "Close",
+        "reg_type": "holding",
+        "address": 69,
+        "type": "pushbutton",
+        "format": "u16",
+        "on_value": 1,
+        "write_only": true,
+        "group": "gg_curtain",
+        "order": 5
+      },
+      {
+        "name": "Status",
+        "reg_type": "holding",
+        "address": 66,
+        "type": "value",
+        "format": "u16",
+        "readonly": true,
+        "enum": [0, 1, 2, 3, 4],
+        "enum_titles": ["Stopped", "Opened", "Closed", "Opening", "Closing"],
+        "group": "gg_curtain",
+        "order": 6,
+        "sporadic": true
+      },
+      {
+        "name": "WiFi AP",
+        "reg_type": "holding",
+        "address": 102,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "group": "gg_settings",
+        "order": 1,
+        "read_period_ms": 60000
+      },
+      {
+        "name": "Reverse",
+        "reg_type": "holding",
+        "address": 62,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "group": "gg_settings",
+        "order": 2,
+        "read_period_ms": 60000
+      },
+      {
+        "name": "Auto Calibration",
+        "reg_type": "holding",
+        "address": 72,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "group": "gg_settings",
+        "order": 3,
+        "read_period_ms": 60000
+      },
+      {
+        "name": "Calibrate Now",
+        "reg_type": "holding",
+        "address": 63,
+        "type": "pushbutton",
+        "format": "u16",
+        "on_value": 1,
+        "write_only": true,
+        "group": "gg_settings",
+        "order": 4
+      },
+      {
+        "name": "Curtain Enable",
+        "reg_type": "holding",
+        "address": 60,
+        "type": "switch",
+        "off_value": 0,
+        "on_value": 1,
+        "group": "gg_settings",
+        "order": 5,
+        "read_period_ms": 60000
+      },
+      {
+        "name": "Serial Number",
+        "reg_type": "holding",
+        "address": 270,
+        "type": "value",
+        "format": "u32",
+        "word_order": "big_endian",
+        "readonly": true,
+        "group": "gg_settings",
+        "order": 6,
+        "read_period_ms": 60000
+      }
+    ],
+    "translations": {
+      "en": {
+        "baud_rate_description": "Device default is 115200 8N2. Save baud on the device first, then match the WB RS-485 port.",
+        "Curtain": "Curtain",
+        "Settings": "Settings",
+        "Position": "Position",
+        "Set Position": "Set position",
+        "Open": "Open",
+        "Stop": "Stop",
+        "Close": "Close",
+        "Status": "Status",
+        "Stopped": "Stopped",
+        "Opened": "Opened",
+        "Closed": "Closed",
+        "Opening": "Opening",
+        "Closing": "Closing",
+        "WiFi AP": "Wi-Fi AP",
+        "Reverse": "Reverse",
+        "Auto Calibration": "Auto calibration",
+        "Calibrate Now": "Calibrate now",
+        "Curtain Enable": "Curtain enable"
+      },
+      "ru": {
+        "baud_rate_description": "Заводская скорость 115200 8N2. Сначала сохраните baud на устройстве, затем выставьте ту же скорость на порту WB.",
+        "Curtain": "Штора",
+        "Settings": "Настройки",
+        "Position": "Позиция",
+        "Set Position": "Уставка",
+        "Open": "Открыть",
+        "Stop": "Стоп",
+        "Close": "Закрыть",
+        "Status": "Статус",
+        "Stopped": "Стоп",
+        "Opened": "Открыто",
+        "Closed": "Закрыто",
+        "Opening": "Открывается",
+        "Closing": "Закрывается",
+        "WiFi AP": "Точка доступа Wi-Fi",
+        "Reverse": "Реверс",
+        "Auto Calibration": "Автокалибровка",
+        "Calibrate Now": "Калибровать сейчас",
+        "Curtain Enable": "Включить штору"
+      }
+    }
+  }
+}
