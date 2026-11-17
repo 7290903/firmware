@@ -4,7 +4,8 @@
 // каналом «HA Discovery» (Hreg 78). 0 → конфиг удаляется из HA.
 
 var PREFIX = "homeassistant";      // discovery_prefix в HA
-var DEV_RE = /^\/devices\/(rh-curt-v2_\d+)\/controls\/HA Discovery$/;
+// rh-curt-v2 — новый модуль Tuya (угол ламелей, скорость); rh-curt-v11 — TP35, только позиция
+var DEV_RE = /^\/devices\/(rh-curt-v(?:2|11)_\d+)\/controls\/HA Discovery$/;
 var state = {};                    // deviceId → последнее опубликованное значение флага
 
 function topics(id) {
@@ -18,12 +19,13 @@ function topics(id) {
 
 function publishDiscovery(id) {
   var t = topics(id);
+  var isV2 = id.indexOf("rh-curt-v2_") === 0;
   var base = "/devices/" + id + "/controls/";
   var device = {
     identifiers: [t.uid],
     name: "RunHouse штора " + id.split("_")[1],
     manufacturer: "RunHouse",
-    model: "RH Curtain v2 (Modbus)",
+    model: isV2 ? "RH Curtain v2 (Modbus)" : "RH Curtain v1.1 (Modbus)",
     via_device: "wirenboard"
   };
   var availability = {
@@ -51,16 +53,22 @@ function publishDiscovery(id) {
     set_position_topic: base + "Set Position/on",
     position_open: 0,              // у мотора 0 % = открыто
     position_closed: 100,
-    tilt_status_topic: base + "Tilt",
-    tilt_command_topic: base + "Tilt/on",
-    tilt_min: 0,
-    tilt_max: 100,
-    tilt_opened_value: 100,
-    tilt_closed_value: 0,
     availability: [availability],
     optimistic: false,
     qos: 1
   };
+  publish(t.cover, JSON.stringify(cover), 1, true);
+  if (!isV2) {
+    publish(t.speed, "", 1, true);  // у v1.1 нет скорости — убрать, если осталась
+    log.info("[rh-curt] HA Discovery опубликован: " + id);
+    return;
+  }
+  cover.tilt_status_topic = base + "Tilt";
+  cover.tilt_command_topic = base + "Tilt/on";
+  cover.tilt_min = 0;
+  cover.tilt_max = 100;
+  cover.tilt_opened_value = 100;
+  cover.tilt_closed_value = 0;
 
   var speed = {
     name: "Скорость",

@@ -8,6 +8,7 @@
 |------|----------------|--------------|----------------------------|------------------|
 | [`rh_curtains.bin`](rh_curtains.bin) | `rh_curtains` | `RHCURT` | **9600** 8N2 | [`rh_curtains-fs.bin`](rh_curtains-fs.bin) (SPIFFS) |
 | [`curtains_fast.bin`](curtains_fast.bin) | `curtains_fast` | `RHCRT2` | **115200** 8N2 | [`curtains_fast-fs.bin`](curtains_fast-fs.bin) (SPIFFS) |
+| [`rh_curtains_v1_1.bin`](rh_curtains_v1_1.bin) | `rh_curtains_v1_1` | `RHCRV1` | **115200** 8N2 | [`rh_curtains_v1_1-fs.bin`](rh_curtains_v1_1-fs.bin) (SPIFFS) |
 | [`rh_curtains_v2.bin`](rh_curtains_v2.bin) | `rh_curtains_v2` | `RHCRV2` | **115200** 8N2 | [`rh_curtains_v2-fs.bin`](rh_curtains_v2-fs.bin) (SPIFFS) |
 
 Веб-UI у обеих сборок общий (SPIFFS из каталога `data`).
@@ -19,7 +20,23 @@
 
 - **`rh_curtains_v2`** — **новый модуль Tuya**: ESP вместо WBR1/K202, UART к MCU CMS32L051. Скорость мотора, угол ламелей, единая команда для Home Assistant, автодобавление в HA (MQTT Discovery). Шаблон [`config-rh-curt-v2.json`](../wb_template/config-rh-curt-v2.json). Порт: **115200**.
 
-Не смешивать шаблон и прошивку: `RHCURT` ≠ `RHCRT2` ≠ `RHCRV2`.
+- **`rh_curtains_v1_1`** — **моторы TP35 (старый модуль Tuya) + новый UI**. Команды Tuya как в `rh_curtains`, веб-интерфейс, Modbus и HA Discovery как у `rh_curtains_v2`. Шаблон [`config-rh-curt-v11.json`](../wb_template/config-rh-curt-v11.json). Порт: **115200**.
+
+Не смешивать шаблон и прошивку: `RHCURT` ≠ `RHCRT2` ≠ `RHCRV1` ≠ `RHCRV2`.
+
+### `rh_curtains_v1_1` — моторы TP35, новый UI, 115200
+
+Поддерживает **два типа моторов**, тип определяется автоматически по ответу MCU при старте:
+
+| Мотор | Как опознаётся | Команды |
+|-------|----------------|---------|
+| **TP35D-10/22** | MCU прислал продукт `p=u6vocbgufhjq97ti` | DP 01 + дубль DP 66 (VER `03`), позиция DP 02/03 |
+| **TP35-05/26EHU** (старый блок) | любой другой продукт | только DP 01, позиция DP 02 |
+
+- **Новый веб-интерфейс** (как у v2). Угла ламелей и скорости нет — у TP35 этих команд Tuya нет.
+- **RS-485 по умолчанию 115200** 8N2 (со старых 9600 переводится автоматически при первом запуске).
+- Сигнатура WB `RHCRV1`, id устройства `rh-curt-v11`.
+- Регистры — как у `rh_curtains_v2` (таблица ниже), **кроме 75 и 76**: есть единая команда 77 и HA Discovery 78.
 
 ### Регистры `rh_curtains_v2` (holding)
 
@@ -44,6 +61,9 @@ esptool.py --chip esp32 write_flash 0x10000 rh_curtains.bin 0x290000 rh_curtains
 # Fast Modbus RHCRT2
 esptool.py --chip esp32 write_flash 0x10000 curtains_fast.bin 0x290000 curtains_fast-fs.bin
 
+# Моторы TP35 + новый UI RHCRV1
+esptool.py --chip esp32 write_flash 0x10000 rh_curtains_v1_1.bin 0x290000 rh_curtains_v1_1-fs.bin
+
 # Новый модуль Tuya RHCRV2
 esptool.py --chip esp32 write_flash 0x10000 rh_curtains_v2.bin 0x290000 rh_curtains_v2-fs.bin
 ```
@@ -62,6 +82,9 @@ curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/wb_template/u
 
 # RHCRT2 (115200)
 TEMPLATE_FILE=config-rh-curt-fast.json bash update-template-from-github.sh
+
+# RHCRV1 — моторы TP35, новый UI (115200)
+TEMPLATE_FILE=config-rh-curt-v11.json bash update-template-from-github.sh
 
 # RHCRV2 — новый модуль Tuya (115200)
 TEMPLATE_FILE=config-rh-curt-v2.json bash update-template-from-github.sh
