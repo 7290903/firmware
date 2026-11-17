@@ -6,7 +6,9 @@ JSON для **Настройки → serial-устройства**.
 |------|------------|-----------|
 | `config-rh-curt.json` | RunHouse шторы | `RHCURT` |
 | `config-rh-curt-fast.json` | RH-Шторы V2 (Fast Modbus) | `RHCRT2` |
+| `config-rh-curt-v2.json` | RunHouse шторы (новый модуль Tuya) | `RHCRV2` |
 | `config-rh-cs-in.json` | Датчик климата | `RH-DK` |
+| `rh-curt-ha-discovery.js` | wb-rules: автодобавление штор RHCRV2 в Home Assistant | — |
 
 ## Установка на контроллер
 
@@ -21,6 +23,16 @@ curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/wb_template/u
 ```bash
 TEMPLATE_FILE=config-rh-curt-fast.json bash update-template-from-github.sh
 ```
+
+Шторы, новый модуль Tuya (RHCRV2) + автодобавление в Home Assistant:
+
+```bash
+TEMPLATE_FILE=config-rh-curt-v2.json bash update-template-from-github.sh
+curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/wb_template/rh-curt-ha-discovery.js \
+  -o /etc/wb-rules/rh-curt-ha-discovery.js
+```
+
+В карточке устройства переключатель «Home Assistant Discovery» (рег. 78) включает/убирает штору в HA.
 
 Датчик:
 
