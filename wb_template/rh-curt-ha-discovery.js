@@ -28,12 +28,6 @@ function publishDiscovery(id) {
     model: isV2 ? "RH Curtain v2 (Modbus)" : "RH Curtain v1.1 (Modbus)",
     via_device: "wirenboard"
   };
-  var availability = {
-    topic: base + "Position/meta/error",
-    payload_available: "",
-    payload_not_available: "r"
-  };
-
   var cover = {
     name: null,                    // имя сущности = имя устройства
     unique_id: t.uid,
@@ -53,7 +47,6 @@ function publishDiscovery(id) {
     set_position_topic: base + "Set Position/on",
     position_open: 0,              // у мотора 0 % = открыто
     position_closed: 100,
-    availability: [availability],
     optimistic: false,
     qos: 1
   };
@@ -79,7 +72,6 @@ function publishDiscovery(id) {
     options: ["Высокая", "Средняя", "Низкая"],
     value_template: "{{ ['Высокая','Средняя','Низкая'][value | int(1)] }}",
     command_template: "{{ ['Высокая','Средняя','Низкая'].index(value) }}",
-    availability: [availability],
     entity_category: "config"
   };
 
