@@ -8,7 +8,7 @@
 |------|----------------|--------------|----------------------------|------------------|
 | [`rh_curtains.bin`](rh_curtains.bin) | `rh_curtains` | `RHCURT` | **9600** 8N2 | [`rh_curtains-fs.bin`](rh_curtains-fs.bin) (SPIFFS) |
 | [`curtains_fast.bin`](curtains_fast.bin) | `curtains_fast` | `RHCRT2` | **115200** 8N2 | [`curtains_fast-fs.bin`](curtains_fast-fs.bin) (SPIFFS) |
-| [`rh_curtains_v2.bin`](rh_curtains_v2.bin) | `rh_curtains_v2` | `RHCRV2` | **9600** 8N2 | [`rh_curtains_v2-fs.bin`](rh_curtains_v2-fs.bin) (SPIFFS) |
+| [`rh_curtains_v2.bin`](rh_curtains_v2.bin) | `rh_curtains_v2` | `RHCRV2` | **115200** 8N2 | [`rh_curtains_v2-fs.bin`](rh_curtains_v2-fs.bin) (SPIFFS) |
 
 Веб-UI у обеих сборок общий (SPIFFS из каталога `data`).
 
@@ -17,7 +17,7 @@
 - **`rh_curtains`** — классические шторы, обычный Modbus RTU. Шаблон [`config-rh-curt.json`](../wb_template/config-rh-curt.json). Порт на Wiren Board: **9600**.
 - **`curtains_fast`** — те же шторы + Fast Modbus V2 (скан WB). Шаблон [`config-rh-curt-fast.json`](../wb_template/config-rh-curt-fast.json). Порт: **115200**. На 9600 сканер Fast Modbus устройство не найдёт.
 
-- **`rh_curtains_v2`** — **новый модуль Tuya**: ESP вместо WBR1/K202, UART к MCU CMS32L051. Скорость мотора, угол ламелей, единая команда для Home Assistant, автодобавление в HA (MQTT Discovery). Шаблон [`config-rh-curt-v2.json`](../wb_template/config-rh-curt-v2.json). Порт: **9600**.
+- **`rh_curtains_v2`** — **новый модуль Tuya**: ESP вместо WBR1/K202, UART к MCU CMS32L051. Скорость мотора, угол ламелей, единая команда для Home Assistant, автодобавление в HA (MQTT Discovery). Шаблон [`config-rh-curt-v2.json`](../wb_template/config-rh-curt-v2.json). Порт: **115200**.
 
 Не смешивать шаблон и прошивку: `RHCURT` ≠ `RHCRT2` ≠ `RHCRV2`.
 
@@ -63,6 +63,6 @@ curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/wb_template/u
 # RHCRT2 (115200)
 TEMPLATE_FILE=config-rh-curt-fast.json bash update-template-from-github.sh
 
-# RHCRV2 — новый модуль Tuya (9600)
+# RHCRV2 — новый модуль Tuya (115200)
 TEMPLATE_FILE=config-rh-curt-v2.json bash update-template-from-github.sh
 ```
