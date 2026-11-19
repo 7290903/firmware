@@ -93,7 +93,7 @@
         "readonly": true,
         "group": "gg_curtain",
         "order": 1,
-        "read_period_ms": 3000
+        "read_period_ms": 500
       },
       {
         "name": "Set Position",
@@ -161,7 +161,7 @@
         ],
         "group": "gg_curtain",
         "order": 6,
-        "read_period_ms": 3000
+        "read_period_ms": 500
       },
       {
         "name": "Command",
