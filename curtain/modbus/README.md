@@ -2,16 +2,13 @@
 
 Папка версии: `vMAJOR.MINOR.PATCH` (совпадает с `RH_FW_VER_*` env `rh_curtains_v1_1m`).
 
-Файл: `rh_curtains_v1_1m.bin`.
+| Файл | Раздел |
+|---|---|
+| `rh_curtains_v1_1m.bin` | приложение |
+| `rh_curtains_v1_1m-fs.bin` | SPIFFS, веб-интерфейс |
 
-```
-https://raw.githubusercontent.com/7290903/firmware/main/curtain/modbus/v1.1.0/rh_curtains_v1_1m.bin
-```
-
-Скрипт с Wiren Board (рядом с образами, не в репозитории исходников):
+Скрипт пишет приложение, ждёт перезагрузку и затем SPIFFS (регистр `0xF005` = 1). Это умеет прошивка с `1.1.1`. Образ `v1.1.0` файловую систему по шине не принимает.
 
 ```
 curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/curtain/modbus/rh-modbus-flash.sh | sudo bash -s -- --slave 1
 ```
-
-`rh_curtains_v1_1m.bin` — только приложение. Раздел SPIFFS (веб-интерфейс) эта сессия не пишет: он остаётся с прошлой прошивки по USB. Отдельного `*-fs.bin` в `modbus/` нет.

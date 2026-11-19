@@ -1,6 +1,7 @@
 #!/bin/bash
 # Прошивка rh_curtains_v1_1m по Modbus RTU (регистры 0xF000 / команда 0xF080).
-# Образ: https://github.com/7290903/firmware ветка main, curtain/modbus/<тег>/rh_curtains_v1_1m.bin
+# Образ приложения: curtain/modbus/<тег>/rh_curtains_v1_1m.bin
+# Файловая система: curtain/modbus/<тег>/rh_curtains_v1_1m-fs.bin (SPIFFS, после приложения)
 #
 # С Wiren Board (сервис опроса шины на время прошивки останавливается):
 #   curl -fsSL https://raw.githubusercontent.com/7290903/firmware/main/curtain/modbus/rh-modbus-flash.sh | sudo bash -s -- --slave 1
@@ -39,8 +40,9 @@ RAW=https://raw.githubusercontent.com/7290903/firmware/main/curtain/modbus
 API=https://api.github.com/repos/7290903/firmware/contents/curtain/modbus
 
 TMP=$(mktemp /tmp/rh_curtains_v1_1m.XXXXXX.bin)
+TMPFS=$(mktemp /tmp/rh_curtains_v1_1m_fs.XXXXXX.bin)
 cleanup() {
-  rm -f "$TMP"
+  rm -f "$TMP" "$TMPFS"
   systemctl start wb-mqtt-serial >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
@@ -75,13 +77,21 @@ print(best_name)
 fi
 
 URL="${RAW}/${TAG}/rh_curtains_v1_1m.bin"
+FSURL="${RAW}/${TAG}/rh_curtains_v1_1m-fs.bin"
 echo "Качаю ${URL}"
 curl -fsSL -A rh-modbus-flash -o "$TMP" "$URL"
+if curl -fsSL -A rh-modbus-flash -o "$TMPFS" "$FSURL"; then
+  echo "Качаю ${FSURL}"
+else
+  echo "Файла SPIFFS в релизе нет — прошью только приложение"
+  rm -f "$TMPFS"
+  TMPFS=
+fi
 
 echo "Останавливаю wb-mqtt-serial"
 systemctl stop wb-mqtt-serial
 
-export RH_PORT="$PORT" RH_SLAVE="$SLAVE" RH_BAUD="$BAUD" RH_TAG="$TAG" RH_FORCE="$FORCE" RH_BIN="$TMP"
+export RH_PORT="$PORT" RH_SLAVE="$SLAVE" RH_BAUD="$BAUD" RH_TAG="$TAG" RH_FORCE="$FORCE" RH_BIN="$TMP" RH_FS="${TMPFS}"
 python3 - <<'PY'
 # -*- coding: utf-8 -*-
 """Мастер Modbus RTU на termios: версия, куски, commit. Без pyserial."""
@@ -93,6 +103,7 @@ BAUD = int(os.environ["RH_BAUD"])
 TAG = os.environ["RH_TAG"]
 FORCE = os.environ.get("RH_FORCE") == "1"
 BIN = os.environ["RH_BIN"]
+FS = os.environ.get("RH_FS") or ""
 
 BASE = 0xF000
 CMD = 0xF080
@@ -208,14 +219,66 @@ def cmd(bus, code, timeout):
     st, err = bus.read_h(BASE + 3, 2, timeout=1.0)
     return st, err
 
+def write_image(bus, data, target, title):
+    """target: 0 приложение, 1 SPIFFS. Регистр 0xF005."""
+    crc = binascii.crc32(data) & 0xFFFFFFFF
+    size = len(data)
+    print("%s: %u байт, crc32 %08X, цель %u" % (title, size, crc, target))
+    # цель, size, crc — одним кадром, begin отдельно (стирание раздела долгое)
+    bus.write_many(BASE + 5, [
+        target & 0xFFFF,
+        size & 0xFFFF, (size >> 16) & 0xFFFF,
+        crc & 0xFFFF, (crc >> 16) & 0xFFFF,
+    ], timeout=2.0)
+    st, err = cmd(bus, 1, timeout=30.0)
+    if st == 3 or err:
+        die("%s begin: status=%u err=%u" % (title, st, err))
+    off = 0
+    while off < size:
+        chunk = data[off:off + 200]
+        n = len(chunk)
+        if n % 2:
+            chunk = chunk + b"\x00"
+        regs = [int.from_bytes(chunk[i:i+2], "big") for i in range(0, len(chunk), 2)]
+        bus.write_many(BASE + 10, [off & 0xFFFF, (off >> 16) & 0xFFFF, n], timeout=2.0)
+        bus.write_many(BASE + 16, regs, timeout=2.0)
+        st, err = cmd(bus, 4, timeout=5.0)
+        if err or st == 3:
+            die("%s кусок off=%u: status=%u err=%u" % (title, off, st, err))
+        off += n
+        if (off // 200) % 10 == 0 or off == size:
+            print("  %u / %u" % (off, size))
+    st, err = cmd(bus, 2, timeout=30.0)
+    if err or st != 2:
+        die("%s commit: status=%u err=%u" % (title, st, err))
+    print("%s принят, контроллер перезагрузится" % title)
+
+def wait_boot(bus, timeout_s=40):
+    deadline = time.monotonic() + timeout_s
+    last = None
+    while time.monotonic() < deadline:
+        time.sleep(1.0)
+        try:
+            ver = tuple(bus.read_h(BASE, 3, timeout=1.2))
+        except SystemExit:
+            continue
+        last = ver
+        if ver != (0, 0, 0):
+            print("После перезагрузки %u.%u.%u" % ver)
+            return ver
+    die("Устройство не ответило после перезагрузки (%s)" % (last,))
+
 def main():
     rel = parse_ver(TAG)
     data = open(BIN, "rb").read()
     if not data:
         die("Пустой bin")
-    crc = binascii.crc32(data) & 0xFFFFFFFF
-    size = len(data)
-    print("Релиз %s, %u байт, crc32 %08X" % (".".join(str(x) for x in rel), size, crc))
+    fs = b""
+    if FS and os.path.isfile(FS) and os.path.getsize(FS) > 0:
+        fs = open(FS, "rb").read()
+    print("Релиз %s, приложение %u байт%s" % (
+        ".".join(str(x) for x in rel), len(data),
+        ", SPIFFS %u байт" % len(fs) if fs else ""))
 
     bus = Bus(PORT, BAUD)
     try:
@@ -239,33 +302,14 @@ def main():
             else:
                 print("--force: прошиваю несмотря на версию")
 
-        # size и crc, затем begin отдельным регистром (стирание раздела может занять несколько секунд)
-        bus.write_many(BASE + 6, [size & 0xFFFF, (size >> 16) & 0xFFFF,
-                                   crc & 0xFFFF, (crc >> 16) & 0xFFFF], timeout=2.0)
-        st, err = cmd(bus, 1, timeout=20.0)
-        if st == 3 or err:
-            die("begin: status=%u err=%u" % (st, err))
-
-        off = 0
-        while off < size:
-            chunk = data[off:off + 200]
-            n = len(chunk)
-            if n % 2:
-                chunk = chunk + b"\x00"
-            regs = [int.from_bytes(chunk[i:i+2], "big") for i in range(0, len(chunk), 2)]
-            bus.write_many(BASE + 10, [off & 0xFFFF, (off >> 16) & 0xFFFF, n], timeout=2.0)
-            bus.write_many(BASE + 16, regs, timeout=2.0)
-            st, err = cmd(bus, 4, timeout=5.0)
-            if err or st == 3:
-                die("кусок off=%u: status=%u err=%u" % (off, st, err))
-            off += n
-            if (off // 200) % 10 == 0 or off == size:
-                print("  %u / %u" % (off, size))
-
-        st, err = cmd(bus, 2, timeout=20.0)
-        if err or st != 2:
-            die("commit: status=%u err=%u" % (st, err))
-        print("Commit принят, контроллер перезагрузится")
+        write_image(bus, data, 0, "Приложение")
+        dev = wait_boot(bus)
+        # Цель 1 (SPIFFS) есть только с 1.1.1. На 1.1.0 тот же кадр затёр бы приложение.
+        if fs and dev >= (1, 1, 1):
+            write_image(bus, fs, 1, "SPIFFS")
+            wait_boot(bus)
+        elif fs:
+            print("SPIFFS не пишу: на шине прошивка без регистра цели 0xF005")
     finally:
         bus.close()
 
